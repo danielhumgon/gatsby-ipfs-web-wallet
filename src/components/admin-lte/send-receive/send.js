@@ -216,43 +216,42 @@ class Send extends React.Component {
     const addressEle = document.getElementById("addressToSend")
     addressEle.value = ""
   }
+
   onScan(data) {
     const validateAdrrs = ["bitcoincash", "simpleledger"]
     try {
       _this.resetAddressValue()
-
       if (!data) {
-        _this.setState({
-          errMsg: "No Result!",
-        })
-        return
+        throw new Error("No Result!")
       }
+      if (typeof data !== "string") {
+        throw new Error("It should scan a bch address or slp address")
+      }
+      // Validates that the words "bitcoincash" or "simpleledger" are contained
       let isValid = false
       for (let i = 0; i < validateAdrrs.length; i++) {
-        if (!isValid) {
-          isValid = data.match(validateAdrrs[i])
-          if (isValid) {
-            _this.setState({
-              address: data,
-              errMsg: "",
-            })
-            const addressEle = document.getElementById("addressToSend")
-            addressEle.value = data
-          }
+        isValid = isValid ? true : data.match(validateAdrrs[i])
+        if (isValid) {
+          _this.setState({
+            address: data,
+            errMsg: "",
+          })
+          const addressEle = document.getElementById("addressToSend")
+          addressEle.value = data
         }
       }
       if (!isValid) {
-        _this.setState({
-          errMsg: "It should scan a bch address or slp address",
-        })
+        throw new Error("It should scan a bch address or slp address")
       }
+      _this.toggleScanner()
     } catch (error) {
-      console.warn(error)
+      _this.toggleScanner()
+      _this.setState({
+        errMsg: error.message,
+      })
     }
   }
-  componentDidMount() {
-
-  }
+  componentDidMount() {}
 }
 Send.propTypes = {
   updateBalance: PropTypes.func.isRequired,
